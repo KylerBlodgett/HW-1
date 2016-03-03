@@ -1,14 +1,20 @@
 ---
-  title: "MATH 216 Homework 1"
-author: "Kyler Blodgett"
+title: "MATH 216 Homework 1"
+author: "WRITE YOUR NAME HERE"
 output: html_document
 ---
-  ```{r, echo=FALSE, message=FALSE, cache=TRUE}
+
+```{r, echo=FALSE, message=FALSE}
 # DO NOT EDIT THIS SECTION
+
 # Load packages
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(lubridate))
+```
+
+
+```{r, echo=FALSE, message=FALSE, cache=TRUE}
 # Load data sets. Note this assumes this .Rmd files is in the same directory as
 # the .csv files.
 flights <- read.csv("data/flights.csv", stringsAsFactors = FALSE) %>% 
@@ -23,95 +29,72 @@ airports <- read.csv("data/airports.csv", stringsAsFactors = FALSE) %>%
   tbl_df()
 states <- read.csv("data/states.csv", stringsAsFactors = FALSE) %>% 
   tbl_df()
+```
+
+
+
+
 
 ## Admistrative:
 
-#Please indicate
+Please indicate
 
-#* Who you collaborated with: Christian
- # * Roughly how much time you spent on this HW: 5 hours so far
-  #* What gave you the most trouble: Plotting graphics!! They don't show up often in my Plots window.
-      # And also couting different types of observations within a variable and then making a proportion
-      # from that count (see question 1). 
-  #* Any comments you have:
-  
-  ## Question 1:
-  
- # * Plot a "time series" of the proportion of flights that were delayed by > 30 minutes on each day.  i.e.
-#+ the x-axis should be some notion of time
-#+ the y-axis should be the proportion.
-#* Which seasons did we tend to see the most and least delays of > 30 minutes.
+* Who you collaborated with:
+* Roughly how much time you spent on this HW:
+* What gave you the most trouble:
+* Any comments you have:
 
-library(dplyr)
-library(ggplot2)
-library(rvest)
 
-  
-flights_mod <-
-  filter(flights, dep_delay>30) %>%
-  select(date, num_flights, dep_delay) %>%
-  mutate(date = months(date, months) %>%  #have to bin (group) the dates before working with them
-  group_by(date) %>%
-  tally() %>%
-  rename(num_flights = n)
-  
-  View(flights_mod)
-  
-  num_per_day <- flights %>% #counting number of flights per day
-  group_by(date) %>% 
-  tally() %>% 
-  rename(num_per_day = n)
 
-#HAVE THE INFO IN "LATE PER DAY" DATASET, UNDER THE "TRUE" ROWS!!
 
-late_per_day <- flights %>% # trying to count number of 30-min late flights per day
- group_by(date, dep_delay>30) %>% 
-  tally() %>% 
-  rename(late_per_day = n)
-late_per_day
 
-late_flights <-
-  left_join(flights_mod, late_per_day,by = "date" ) %>%
-  #mutate(prop = round(late_per_day$late_per_day/(num_per_day$num_per_day),3)
-#View(late_flights)
-  
-  
-View(flights_mod) #this has only flights delayed by >30 minutes
-#ggplot(data=late_flights, aes(x = date, y = prop)) +
-  #geom_dotplot()
+## Question 1:
+
+* Plot a "time series" of the proportion of flights that were delayed by > 30 minutes on each day.  i.e.
+    + the x-axis should be some notion of time
+    + the y-axis should be the proportion.
+* Which seasons did we tend to see the most and least delays of > 30 minutes.
+
+```{r, echo=FALSE, message=FALSE, fig.width=12, fig.height=6}
+
+```
+
+
+
 
 
 ## Question 2:
 
-#Some people prefer flying on older planes.  Even though they aren't as nice,
-#they tend to have more room.  Which airlines should these people favor?
+Some people prefer flying on older planes.  Even though they aren't as nice,
+they tend to have more room.  Which airlines should these people favor?
 
+```{r, echo=FALSE, fig.width=12, fig.height=6}
 old_planes <- (left_join(flights, planes, by = "plane") %>%
   select(plane, carrier, year) %>%
   arrange(carrier, year) %>%
   group_by(carrier, year) %>%
   tally () %>%
   rename(num_in_year = n) )
-  View(old_planes)
 ggplot(data=old_planes, aes(x = year, y = num_in_year, colour = carrier)) +
   geom_dotplot() + #not sure how to make it visually better while using dotplot? It was OK with geom_point
   scale_y_log10() +
   facet_wrap(~carrier, nrow=4) +
   ggtitle("Age of Planes by Airline") 
+```
 
-## From these graphs, we can see visually that the AA airline used the oldest planes 
-#in their departures from the Dallas airport during January 2011. CO and DL also have fairly old fleets
-# for that time window, with some planes made in the 1950s, and hundreds dating back to the 1970s. 
-# All other carriers have planes manufactured predominantly since the mid- to late-1980s.
+From these graphs, we can see visually that the AA airline used the oldest planes  in their departures from the Dallas airport during January 2011. CO and DL also have fairly old fleets for that time window, with some planes made in the 1950s, and hundreds dating back to the 1970s. All other carriers have planes manufactured predominantly since the mid- to late-1980s.
+
+
 
 
 
 ## Question 3:
 
-#* What states did listed Southwest Airlines flights tend to fly to? SouthWest abbreviation is WN
-#* What states did all Southwest Airlines flights tend to fly to?
+* What states did listed Southwest Airlines flights tend to fly to?
+* What states did all Southwest Airlines flights tend to fly to?
 
-#Part A
+
+```{r, echo=FALSE, message=FALSE, fig.width=12, fig.height=6}
 WN_flights <- 
   left_join(flights, airports, by=c("dest"="iata")) %>%
   filter(carrier == "WN") %>%
@@ -122,45 +105,30 @@ WN_flights <-
 ggplot(data=WN_flights, aes(x = state)) +
   geom_bar(aes(y=..count..)) +
   ggtitle("WN Flights by State") #Not right, think I'm missing some argument for geom_bar
-  
-#Part B
-#How is this different from part A, listed vs. non-listed? Ask in class Wed
+```
+
+
+
+
 
 ## Question 4:
 
-#What weather patterns are associated with the biggest departure delays?
-weather_effect <- 
-  left_join(flights, weather, by=c("date", "hour")) %>%
-  select(date, hour, dep_delay, wind_speed, temp, visibility, conditions)
-ggplot(data=weather_effect, aes(x=wind_speed, y=dep_delay)) + #Not enough parameters to include
-  #visibility
-  geom_point() +
-  facet_wrap(~conditions) +
-  ggtitle("Departure Delays by Weather")
-    
+What weather patterns are associated with the biggest departure delays?
+
+```{r, echo=FALSE, message=FALSE, fig.width=12, fig.height=6}
+
+```
+
+
+
+
+
 ## Question 5:
 
-#I want to know what proportionately regions (NE, south, west, midwest) each 
-#carrier flies to from Houston in the month of July.  Consider the `month()`
-#function from the `lubridate` package.
+I want to know what proportionately regions (NE, south, west, midwest) each 
+carrier flies to from Houston in the month of July.  Consider the `month()`
+function from the `lubridate` package.
 
-state_by_region <-
-  left_join(airports, states, by="state")
-View(state_by_region)
+```{r, echo=FALSE, message=FALSE, fig.width=12, fig.height=6}
 
-july_flights <-
-  left_join(flights, state_by_region, by=c("dest"="iata")) %>%
-  select(date, carrier, state, region) %>%
-  mutate(date=months(date))%>%
-  group_by(date) %>%
-  filter(date=="July") 
-  #group_by(region) %>%
-  #tally()
-
-View(july_flights)
-
-#ggplot(data=july_flights, aes(x=region, y=..count..)) +
-  #geom_bar() +
-  #facet_wrap(~carrier, nrows=3)
-
-# Not done with 5 yet, but have the data table as I want it. The commented-out ggplot code isn't working
+```
